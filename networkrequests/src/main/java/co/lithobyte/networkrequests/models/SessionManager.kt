@@ -1,4 +1,4 @@
-package co.lithobyte.networkrequests.models
+package com.thryvinc.thux.models
 
 import android.content.SharedPreferences
 import java.text.SimpleDateFormat
@@ -20,14 +20,15 @@ open class PrefsTokenSession(val prefs: SharedPreferences, val authKey: String =
 
     override fun isAuthenticated(): Boolean {
         val token = prefs.getString(prefsKey, "")
-        if (token != null) {
-            return token.isNotBlank()
+        if (token!!.isNotBlank()) {
+            return true
         }
+        return false
     }
 
     override fun addAuthHeaders(headers: MutableMap<String, String>): MutableMap<String, String> {
         val token = prefs.getString(prefsKey, "")
-        headers[authKey] = token
+        headers[authKey] = token.toString()
         return headers
     }
 

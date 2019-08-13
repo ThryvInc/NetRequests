@@ -8,6 +8,7 @@ import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.JsonRequest
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.thryvinc.thux.models.SessionManager
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject

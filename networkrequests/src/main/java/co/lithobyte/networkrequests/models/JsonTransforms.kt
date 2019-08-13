@@ -14,4 +14,4 @@ inline fun <reified T> jsonStringToModel(string: String?, gson: Gson, key: Strin
     return string?.jsonStringValueFor(key) into gson::fromJsonString
 }
 
-fun String.jsonStringValueFor(key: String) = JSONObject(this)[key]?.toString()
+fun String.jsonStringValueFor(key: String) = JSONObject(this)[key].toString()
