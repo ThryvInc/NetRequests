@@ -24,8 +24,10 @@ fun jsonObjectFromString(string: String): JSONObject = JSONObject(string)
 fun jsonArrayFromString(string: String): JSONArray = JSONArray(string)
 inline fun <reified T> Gson.fromJsonString(json: String): T? = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
 
-inline fun <reified T> responseToModel(string: String, config:ServerConfiguration)
-        = jsonStringToModel<T>(string,Gson())
+
+inline fun <reified T> responseToModel(string: String)
+        = jsonStringToModel<T>(string, Gson())
+
 inline fun <reified T> JSONObject.getModel(gson: Gson): T? {
     val key = (T::class.java).simpleName.toSnakeCase()
     val stringValue = this[key]?.toString()
