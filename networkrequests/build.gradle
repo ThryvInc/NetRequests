@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.android.volley:volley:1.1.1'
     implementation 'com.google.code.gson:gson:2.6.2'
     implementation 'com.github.cesarferreira:kotlin-pluralizer:0.2.9'
-    implementation "com.github.ThryvInc:FirstOrderFunctions:0.1.1"
+    implementation "com.github.ThryvInc:FunctionalKotlin:0.1.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {

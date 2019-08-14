@@ -55,7 +55,7 @@ open class FunctionalJsonRequest<T>(method: Int = Method.GET,
                                     val parseResponseString: (String) -> T?,
                                     val listener: (T?) -> Unit,
                                     val errorListener: (VolleyError) -> Unit,
-                                    val stubHolder: StubHolderInterface? = null):
+                                    val stubHolder: StubHolderInterface? = null):`
     JsonRequest<T?>(method, url, stringBody, listener, errorListener) {
 
     companion object {
