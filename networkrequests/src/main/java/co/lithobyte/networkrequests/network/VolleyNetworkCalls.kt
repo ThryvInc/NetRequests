@@ -48,14 +48,14 @@ inline fun <reified T> responseToModels(string: String, config: ServerConfigurat
     return arrayList
 }
 
-open class FunctionalJsonRequest<T>(method: Int = Method.GET,
+open class FunctionalJsonRequest<T>(method: Int = Request.Method.GET,
                                     url: String,
                                     stringBody: String?,
                                     val applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String>,
                                     val parseResponseString: (String) -> T?,
                                     val listener: (T?) -> Unit,
                                     val errorListener: (VolleyError) -> Unit,
-                                    val stubHolder: StubHolderInterface? = null):`
+                                    val stubHolder: StubHolderInterface? = null):
     JsonRequest<T?>(method, url, stringBody, listener, errorListener) {
 
     companion object {
