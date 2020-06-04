@@ -48,6 +48,12 @@ inline fun <reified T> responseToModels(string: String, config: ServerConfigurat
     return arrayList
 }
 
+fun jsonHeaders(headers: MutableMap<String, String>): MutableMap<String, String> {
+    headers["Content-type"] = "application/json"
+    headers["Accept"] = "application/json"
+    return headers
+}
+
 open class FunctionalJsonRequest<T>(method: Int = Request.Method.GET,
                                     url: String,
                                     stringBody: String?,
@@ -97,7 +103,7 @@ open class NetworkCall<T>(val serverConfiguration: ServerConfiguration?,
                           open var errorListener: (VolleyError) -> Unit,
                           open var stubHolder: StubHolderInterface? = null) {
     open var url: (String) -> String = ::urlWithServerConfiguration
-    open var applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String> = identity()
+    open var applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String> = ::jsonHeaders
 
     protected fun urlWithServerConfiguration(endpoint: String): String {
         if (serverConfiguration != null) {
