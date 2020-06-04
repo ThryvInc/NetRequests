@@ -13,6 +13,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
 
 fun String.toSnakeCase(): String {
     val regex = "([a-z])([A-Z]+)".toRegex()
@@ -23,7 +24,6 @@ fun String.toSnakeCase(): String {
 fun jsonObjectFromString(string: String): JSONObject = JSONObject(string)
 fun jsonArrayFromString(string: String): JSONArray = JSONArray(string)
 inline fun <reified T> Gson.fromJsonString(json: String): T? = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
-
 
 inline fun <reified T> responseToModel(string: String)
         = jsonStringToModel<T>(string, Gson())
@@ -90,12 +90,13 @@ open class FunctionalJsonRequest<T>(method: Int = Request.Method.GET,
 open class NetworkCall<T>(val serverConfiguration: ServerConfiguration?,
                           open val method: Int = Request.Method.GET,
                           open val endpoint: String,
+                          open val getParams: MutableMap<String, String> = HashMap(),
                           open var stringBody: String? = null,
                           open var parseResponseString: (String) -> T? = ::toNull,
                           open var listener: (T?) -> Unit = ::doNothing,
                           open var errorListener: (VolleyError) -> Unit,
                           open var stubHolder: StubHolderInterface? = null) {
-    open var url: (String) -> String = { it into ::urlWithServerConfiguration }
+    open var url: (String) -> String = ::urlWithServerConfiguration
     open var applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String> = identity()
 
     protected fun urlWithServerConfiguration(endpoint: String): String {
@@ -106,8 +107,14 @@ open class NetworkCall<T>(val serverConfiguration: ServerConfiguration?,
     }
 
     fun createRequest(): JsonRequest<T?> {
+        var urlString = endpoint into url
+        if (getParams.isNotEmpty()) {
+            val params = getParams.entries
+                .joinToString(separator = "&") { "${it.key}=${URLEncoder.encode(it.value, "utf-8")}" }
+            urlString = "$urlString?${params}"
+        }
         return FunctionalJsonRequest<T>(method,
-            endpoint into url,
+            urlString,
             stringBody,
             applyHeaders,
             parseResponseString,
@@ -165,11 +172,11 @@ open class AuthenticatedCall<T>(serverConfiguration: ServerConfiguration?,
                                 stubHolder: StubHolderInterface? = null):
     NetworkCall<T>(serverConfiguration, method,
         endpoint,
-        stringBody,
-        parseResponse,
-        listener,
-        errorListener,
-        stubHolder) {
+        stringBody = stringBody,
+        parseResponseString = parseResponse,
+        listener = listener,
+        errorListener = errorListener,
+        stubHolder = stubHolder) {
     override var applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String>
         get() = if (SessionManager.session != null) (SessionManager.session!!)::addAuthHeaders else identity()
         set(_) {}
