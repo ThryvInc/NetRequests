@@ -155,7 +155,7 @@ open class CredsLoginCall<T>(serverConfiguration: ServerConfiguration?,
         get() = createBody()
         set(_) {}
 
-    fun createBody(): String {
+    open fun createBody(): String {
         var jsonObject = JSONObject()
         jsonObject.put(usernameKey, username)
         jsonObject.put(passwordKey, password)
