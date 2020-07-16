@@ -1,7 +1,6 @@
 package co.lithobyte.networkrequests.network
 
 import co.lithobyte.functionalkotlin.*
-import co.lithobyte.networkrequests.functional.*
 import co.lithobyte.networkrequests.models.*
 import com.android.volley.*
 import com.android.volley.toolbox.HttpHeaderParser
@@ -102,8 +101,19 @@ open class NetworkCall<T>(val serverConfiguration: ServerConfiguration?,
                           open var listener: (T?) -> Unit = ::doNothing,
                           open var errorListener: (VolleyError) -> Unit,
                           open var stubHolder: StubHolderInterface? = null) {
-    open var url: (String) -> String = ::urlWithServerConfiguration
+    open var urlParams: MutableMap<String, String> = HashMap()
+    open var url: (String) -> String = ::urlWithServerConfiguration o (urlParams intoFirst ::addUrlParamsToUrl)
     open var applyHeaders: (MutableMap<String, String>) -> MutableMap<String, String> = ::jsonHeaders
+
+    open fun addUrlParamsToUrl(params: MutableMap<String, String>, url: String): String {
+        return "$url?${params into ::paramsString}"
+    }
+
+    companion object {
+        fun paramsString(params: Map<String, String>): String {
+            return params.keys.map { "$it=${URLEncoder.encode(params[it], "utf-8")}" }.joinToString(separator = "&")
+        }
+    }
 
     protected fun urlWithServerConfiguration(endpoint: String): String {
         if (serverConfiguration != null) {
@@ -203,38 +213,6 @@ open class IndexCall<T>(serverConfiguration: ServerConfiguration?,
         stubHolder = stubHolder
     )
 
-open class UrlParameteredCall<T>(serverConfiguration: ServerConfiguration?,
-                                 method: Int = Request.Method.GET,
-                                 endpoint: String,
-                                 stringBody: String? = null,
-                                 parseResponse: (String) -> T?,
-                                 listener: (T?) -> Unit,
-                                 errorListener: (VolleyError?) -> Unit,
-                                 stubHolder: StubHolderInterface? = null):
-    AuthenticatedCall<T>(serverConfiguration,
-        method,
-        endpoint,
-        stringBody,
-        parseResponse,
-        listener,
-        errorListener,
-        stubHolder) {
-    open var urlParams: MutableMap<String, String> = HashMap()
-    override var url: (String) -> String
-        get() = super.url o (urlParams intoFirst ::addUrlParamsToUrl)
-        set(_) {}
-
-    open fun addUrlParamsToUrl(params: MutableMap<String, String>, url: String): String {
-        return "$url?${params into ::paramsString}"
-    }
-
-    companion object {
-        fun paramsString(params: Map<String, String>): String {
-            return params.keys.map { "$it=${params[it]}" }.joinToString(separator = "&")
-        }
-    }
-}
-
 open class UrlParameteredIndexCall<T>(serverConfiguration: ServerConfiguration?,
                                       endpoint: String,
                                       parseResponse: (String) -> List<T>?,
@@ -246,22 +224,7 @@ open class UrlParameteredIndexCall<T>(serverConfiguration: ServerConfiguration?,
         parseResponse,
         listener,
         errorListener,
-        stubHolder) {
-    open var urlParams: MutableMap<String, String> = HashMap()
-    override var url: (String) -> String
-        get() = super.url o (urlParams intoFirst ::addUrlParamsToUrl)
-        set(_) {}
-
-    open fun addUrlParamsToUrl(params: MutableMap<String, String>, url: String): String {
-        return "$url?${params into ::paramsString}"
-    }
-
-    companion object {
-        fun paramsString(params: Map<String, String>): String {
-            return params.keys.map { "$it=${params[it]}" }.joinToString(separator = "&")
-        }
-    }
-}
+        stubHolder)
 
 open class PagedCall<T>(serverConfiguration: ServerConfiguration?,
                         endpoint: String,
@@ -270,7 +233,7 @@ open class PagedCall<T>(serverConfiguration: ServerConfiguration?,
                         listener: (T?) -> Unit,
                         errorListener: (VolleyError?) -> Unit,
                         stubHolder: StubHolderInterface? = null):
-    UrlParameteredCall<T>(serverConfiguration,
+    AuthenticatedCall<T>(serverConfiguration,
         Request.Method.GET,
         endpoint,
         stringBody,
