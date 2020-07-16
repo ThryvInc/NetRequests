@@ -1,4 +1,4 @@
-package co.lithobyte.networkrequests.functional
+package co.lithobyte.networkrequests.models
 
 
 import co.lithobyte.networkrequests.network.ServerConfiguration
