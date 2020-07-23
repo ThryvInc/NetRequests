@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.android.volley.NoConnectionError
+import com.android.volley.TimeoutError
 import com.android.volley.VolleyError
 
 interface NetworkErrorFunctionProvider {
@@ -46,16 +48,26 @@ class DebugNetworkErrorFunctionProvider(val context: Context?): NetworkErrorFunc
                 if (error?.message != null) {
                     title = "Error"
                     text = error.message
-                } else {
+                } else if (error is NoConnectionError) {
                     title = "Offline"
                     text = "It looks like you're offline. Please check your internet connection."
+                } else if (error is TimeoutError) {
+                    title = "Timeout"
+                    text = "Request timed out. Please check your internet connection; if this keeps occurring, please contact us."
+                } else {
+                    title = "Error"
+                    if (error != null) {
+                        text = "${error::class.java.simpleName} occurred."
+                    } else {
+                        text = "An unknown error occurred."
+                    }
                 }
             }
             if (context != null) {
                 AlertDialog.Builder(context)
                     .setTitle(title)
                     .setMessage(text)
-                    .setPositiveButton("Ok",{ dialog, _ -> dialog.dismiss() })
+                    .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
                     .create()
                     .show()
             }
