@@ -12,6 +12,29 @@ interface NetworkErrorFunctionProvider {
     fun errorFunction(): (VolleyError?) -> Unit
 }
 
+fun noResponseErrorMessages(error: VolleyError?): Pair<String, String> {
+    val title: String
+    val text: String
+    if (error?.message != null) {
+        title = "Error"
+        text = error.message ?: ""
+    } else if (error is NoConnectionError) {
+        title = "Offline"
+        text = "It looks like you're offline. Please check your internet connection."
+    } else if (error is TimeoutError) {
+        title = "Timeout"
+        text = "Request timed out. Please check your internet connection; if this keeps occurring, please contact us."
+    } else {
+        title = "Error"
+        if (error != null) {
+            text = "${error::class.java.simpleName} occurred."
+        } else {
+            text = "An unknown error occurred."
+        }
+    }
+    return Pair(title, text)
+}
+
 class PrintingNetworkErrorFunctionProvider: NetworkErrorFunctionProvider {
     override fun errorFunction(): (VolleyError?) -> Unit {
         return { error: VolleyError? ->
@@ -45,23 +68,9 @@ class DebugNetworkErrorFunctionProvider(val context: Context?): NetworkErrorFunc
                     text = "Message: ${error.message}"
                 }
             } else {
-                if (error?.message != null) {
-                    title = "Error"
-                    text = error.message
-                } else if (error is NoConnectionError) {
-                    title = "Offline"
-                    text = "It looks like you're offline. Please check your internet connection."
-                } else if (error is TimeoutError) {
-                    title = "Timeout"
-                    text = "Request timed out. Please check your internet connection; if this keeps occurring, please contact us."
-                } else {
-                    title = "Error"
-                    if (error != null) {
-                        text = "${error::class.java.simpleName} occurred."
-                    } else {
-                        text = "An unknown error occurred."
-                    }
-                }
+                val pair = noResponseErrorMessages(error)
+                title = pair.first
+                text = pair.second
             }
             if (context != null) {
                 AlertDialog.Builder(context)
@@ -83,11 +92,8 @@ class ToastDebugNetworkErrorFunctionProvider(val context: Context?): NetworkErro
             if (networkResponse != null && networkResponse.statusCode > 299) {
                 text = "Server Error ${networkResponse.statusCode}"
             } else {
-                if (error?.message != null) {
-                    text = error.message
-                } else {
-                    text = "It looks like you're offline. Please check your internet connection."
-                }
+                val pair = noResponseErrorMessages(error)
+                text = pair.second
             }
             if (context != null) {
                 Toast.makeText(context, text, Toast.LENGTH_LONG).show()
@@ -154,8 +160,9 @@ open class ServerCodeErrorFunctionProvider(val context: Context?,
                 title = strings.first
                 text = strings.second
             } else {
-                title = "Offline"
-                text = "It looks like you're offline. Please check your internet connection."
+                val pair = noResponseErrorMessages(it)
+                title = pair.first
+                text = pair.second
             }
 
             when (displayType) {
